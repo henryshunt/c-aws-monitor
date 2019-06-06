@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Windows;
 using NotifyIcon = System.Windows.Forms.NotifyIcon;
 
-namespace C_AWS_Monitor
+namespace C_AWSMonitor
 {
     public partial class App : Application
     {
@@ -16,7 +16,7 @@ namespace C_AWS_Monitor
             TrayIcon.Click += TrayIcon_Click;
 
             // Set the tray icon from a PNG file
-            var bitmap = new Bitmap("Tray Icon.png");
+            var bitmap = new Bitmap("Resources/icon.png");
             TrayIcon.Icon = Icon.FromHandle(bitmap.GetHicon());
             TrayIcon.Visible = true;
         }

@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Application = System.Windows.Application;
 
-namespace C_AWS_Monitor
+namespace C_AWSMonitor
 {
     public partial class TrayWindow : Window
     {

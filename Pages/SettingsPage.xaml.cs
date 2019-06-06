@@ -3,7 +3,7 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace C_AWS_Monitor
+namespace C_AWSMonitor
 {
     public partial class SettingsPage : Page
     {

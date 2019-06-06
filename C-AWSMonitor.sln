@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "C-AWS Monitor", "C-AWS Monitor\C-AWS Monitor.csproj", "{03F3B623-9D5A-4F8B-91CB-0A2F6F4B4439}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "C-AWSMonitor", "C-AWSMonitor.csproj", "{03F3B623-9D5A-4F8B-91CB-0A2F6F4B4439}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

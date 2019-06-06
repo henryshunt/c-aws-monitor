@@ -17,7 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace C_AWS_Monitor
+namespace C_AWSMonitor
 {
     public partial class DataPage : Page
     {

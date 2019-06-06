@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using OxyPlot;
 using OxyPlot.Axes;
 
-namespace C_AWS_Monitor
+namespace C_AWSMonitor
 {
     public class ChartViewModel
     {
