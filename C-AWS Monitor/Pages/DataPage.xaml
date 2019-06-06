@@ -1,0 +1,53 @@
+﻿<Page x:Class="C_AWS_Monitor.DataPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:C_AWS_Monitor"
+      xmlns:oxy="http://oxyplot.org/wpf"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="DataPage" Loaded="Page_Loaded">
+
+    <Grid>
+        <Label Content="Air Temperature:" Margin="20,0,82,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="AirTValue" Content="No data" Margin="0,0,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="57" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+
+        <oxy:Plot x:Name="AirTChart" Margin="10,27,21,0" Height="150" VerticalAlignment="Top" Background="{x:Null}" Padding="0" PlotAreaBorderColor="#FF323232" TextColor="#FF646464" PlotAreaBorderThickness="1">
+            <oxy:Plot.Axes>
+                <oxy:LinearAxis x:Name="GraphYAxis" Position="Left" TickStyle="None" MajorGridlineStyle="Solid" MinorGridlineStyle="None" Minimum="-5" Maximum="25" MajorStep="5"/>
+                <oxy:DateTimeAxis x:Name="GraphXAxis" Position="Bottom" TickStyle="None" MajorStep="0.25" StringFormat="%H" MajorGridlineStyle="Solid" Minimum="0" Maximum="1"/>
+            </oxy:Plot.Axes>
+
+            <oxy:LineSeries ItemsSource="{Binding Points}" Color="#F35168"/>
+        </oxy:Plot>
+
+        <Label Content="Relative Humidity:" Margin="20,183,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="RelHValue" Content="No Data" Margin="0,183,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+
+        <Label Content="Wind Speed:" Margin="20,212,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="WSpdValue" Content="No Data" Margin="0,212,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+        <Label Content="Wind Direction:" Margin="20,232,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="WDirValue" Content="No Data" Margin="0,232,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+        <Label Content="Wind Gust:" Margin="20,252,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="WGstValue" Content="No Data" Margin="0,252,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+
+        <Label Content="Past Hour Sunshine:" Margin="20,281,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="SunD_PHrValue" Content="No Data" Margin="0,281,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+        <Label Content="Past Hour Rainfalll:" Margin="20,301,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="Rain_PHrValue" Content="No Data" Margin="0,301,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+
+        <Label Content="Mean Sea Level Pressure:" Margin="20,330,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="MSLPValue" Content="No Data" Margin="0,330,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+
+        <Label Content="Soil Temperature 10CM:" Margin="20,359,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="ST10Value" Content="No Data" Margin="0,359,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+        <Label Content="Soil Temperature 30CM:" Margin="20,379,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="ST30Value" Content="No Data" Margin="0,379,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+        <Label Content="Soil Temperature 1M:" Margin="20,399,92,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="ST00Value" Content="No Data" Margin="0,399,20,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+
+        <Label Content="CPU Temperature:" Margin="20,428,92,-7" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6"/>
+        <Label x:Name="CPUTValue" Content="No Data" Margin="0,428,20,-7" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Right" Width="67" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+    </Grid>
+</Page>
