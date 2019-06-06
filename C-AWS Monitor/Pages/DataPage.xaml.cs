@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using OxyPlot.Axes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,11 +19,17 @@ using System.Windows.Shapes;
 
 namespace C_AWS_Monitor
 {
-    /// <summary>
-    /// Interaction logic for DataPage.xaml
-    /// </summary>
     public partial class DataPage : Page
     {
+        private bool IsLoading = false;
+
+        private ChartViewModel ChartModel = new ChartViewModel();
+        public DateTime DataTime { get; private set; }
+        DateTime LastUpdated;
+
+        public event EventHandler DataDownloadStarted;
+        public event EventHandler DataDownloadCompleted;
+
         public DataPage()
         {
             InitializeComponent();
@@ -30,48 +40,51 @@ namespace C_AWS_Monitor
             AirTChart.DataContext = ChartModel;
         }
 
-        private void LoadData(bool checkUpdated)
+        public void LoadData(bool checkUpdated)
         {
             if (IsLoading) return;
-            if (IsSettingsOpen) return;
+
+            // Don't download new data if current is less than a minute old
             if (checkUpdated)
             {
-                TimeSpan difference = DateTime.UtcNow - LastUpdated;
-                if (difference.TotalMinutes < 1) return;
+                if (LastUpdated != null)
+                {
+                    TimeSpan difference = DateTime.UtcNow - LastUpdated;
+                    if (difference.TotalMinutes < 1) return;
+                }
             }
 
             try
             {
                 Thread worker = new Thread(delegate ()
                 {
-                    // Show the loading spinner
                     Application.Current.Dispatcher.Invoke(delegate
-                    { Spinner.Visibility = Visibility.Visible; });
+                    { DataDownloadStarted?.Invoke(this, new EventArgs()); });
 
                     // Get temporary current time
                     DateTime _LastUpdated = DateTime.UtcNow;
                     string utc = _LastUpdated.ToString("yyyy-MM-dd'T'HH-mm-00");
 
                     // Download and deserialise report for current time
-                    string recordUrl = Properties.Settings.Default.DataEndpoint + "/data/now.php?time=" + utc;
+                    string recordUrl = Properties.Settings.Default.DataEndpoint + "/data/now2.php?time=" + utc;
                     string recordData = new WebClient().DownloadString(recordUrl);
                     ReportJSON recordJson = JsonConvert.DeserializeObject<ReportJSON>(recordData,
                         new JsonSerializerSettings
                         { NullValueHandling = NullValueHandling.Ignore });
 
                     // Download and deserialise environment report for current time
-                    string envUrl = Properties.Settings.Default.DataEndpoint + "/data/about.php?time=" + utc;
-                    string envData = new WebClient().DownloadString(envUrl);
-                    EnvReportJSON envJson = JsonConvert.DeserializeObject<EnvReportJSON>(envData,
-                        new JsonSerializerSettings
-                        { NullValueHandling = NullValueHandling.Ignore });
+                    //string envUrl = Properties.Settings.Default.DataEndpoint + "/data/about.php?time=" + utc;
+                    //string envData = new WebClient().DownloadString(envUrl);
+                    //EnvReportJSON envJson = JsonConvert.DeserializeObject<EnvReportJSON>(envData,
+                    //    new JsonSerializerSettings
+                    //    { NullValueHandling = NullValueHandling.Ignore });
 
                     // Download and deserialise chart data for current day
-                    string graphUrl = Properties.Settings.Default.DataEndpoint + "/data/graph-day.php?time=" + utc + "&fields=AirT";
-                    string graphData = new WebClient().DownloadString(graphUrl).Replace("[[", "[").Replace("]]", "]");
-                    List<PointJSON> graphJson = JsonConvert.DeserializeObject<List<PointJSON>>(graphData,
-                        new JsonSerializerSettings
-                        { NullValueHandling = NullValueHandling.Ignore });
+                    //string graphUrl = Properties.Settings.Default.DataEndpoint + "/data/graph-day.php?time=" + utc + "&fields=AirT";
+                    //string graphData = new WebClient().DownloadString(graphUrl).Replace("[[", "[").Replace("]]", "]");
+                    //List<PointJSON> graphJson = JsonConvert.DeserializeObject<List<PointJSON>>(graphData,
+                    //    new JsonSerializerSettings
+                    //    { NullValueHandling = NullValueHandling.Ignore });
 
                     LastUpdated = _LastUpdated;
                     DataTime = DateTime.Parse(recordJson.Time);
@@ -79,16 +92,14 @@ namespace C_AWS_Monitor
                     // Display the downloaded data in the interface
                     Application.Current.Dispatcher.Invoke(delegate
                     {
-                        RecordTime.Content = "Data on " + DateTime.Parse(
-                            recordJson.Time).ToString("dd/MM/yyyy 'at' HH:mm");
                         AirTValue.Content = recordJson.AirT.ToString() + "°C";
 
                         // Add points to chart
                         ChartModel.ClearPoints();
-                        foreach (var item in graphJson)
-                        {
-                            ChartModel.AddPoint(Convert.ToInt32(item.x), item.y);
-                        }
+                        //foreach (var item in graphJson)
+                        //{
+                        //    ChartModel.AddPoint(Convert.ToInt32(item.x), item.y);
+                        //}
 
                         RelHValue.Content = recordJson.RelH.ToString() + "%";
                         WSpdValue.Content = recordJson.WSpd.ToString() + " mph";
@@ -100,7 +111,7 @@ namespace C_AWS_Monitor
                         ST10Value.Content = recordJson.ST10.ToString() + "°C";
                         ST30Value.Content = recordJson.ST30.ToString() + "°C";
                         ST00Value.Content = recordJson.ST00.ToString() + "°C";
-                        CPUTValue.Content = envJson.CPUT.ToString() + "°C";
+                        //CPUTValue.Content = envJson.CPUT.ToString() + "°C";
 
                         // Calculate current day boundaries for the chart
                         var bounds = DayBounds(_LastUpdated);
@@ -110,18 +121,14 @@ namespace C_AWS_Monitor
                         SetYAxisSettings();
                         AirTChart.InvalidatePlot();
 
-                        // Hide the loading spinner
-                        Spinner.Visibility = Visibility.Hidden;
+                        DataDownloadCompleted?.Invoke(this, new EventArgs());
                     });
                 });
 
                 worker.IsBackground = true;
                 worker.Start();
             }
-            catch
-            {
-                Spinner.Visibility = Visibility.Hidden;
-            }
+            catch { DataDownloadCompleted?.Invoke(this, new EventArgs()); }
         }
 
         private Tuple<DateTime, DateTime> DayBounds(DateTime utc)

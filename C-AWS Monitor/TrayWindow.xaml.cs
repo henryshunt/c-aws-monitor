@@ -13,24 +13,34 @@ namespace C_AWS_Monitor
 {
     public partial class TrayWindow : Window
     {
-        private string CurrentPage = "null";
-        private DataPage _DataPage;
-
         private bool IsOpen = false;
-        private bool IsSettingsOpen = false;
-        private bool IsLoading = false;
 
-        private ChartViewModel ChartModel = new ChartViewModel();
-        DateTime DataTime;
-        DateTime LastUpdated;
+        private MonitorPage CurrentPage = MonitorPage.None;
+        private DataPage _DataPage = new DataPage();
 
         public TrayWindow()
         {
             InitializeComponent();
+        }
 
-            if (!Properties.Settings.Default.IsFirstRun)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            _DataPage.DataDownloadStarted += _DataPage_DataDownloadStarted;
+            _DataPage.DataDownloadCompleted += _DataPage_DataDownloadCompleted;
+        }
+
+        private void _DataPage_DataDownloadStarted(object sender, EventArgs e)
+        {
+            Spinner.Visibility = Visibility.Visible;
+        }
+        private void _DataPage_DataDownloadCompleted(object sender, EventArgs e)
+        {
+            Spinner.Visibility = Visibility.Collapsed;
+
+            if (_DataPage.DataTime != null)
             {
-                _DataPage = new DataPage();
+                pageTitle.Content = "Data on "
+                    + _DataPage.DataTime.ToString("dd/MM/yyyy 'at' HH:mm");
             }
         }
 
@@ -43,11 +53,13 @@ namespace C_AWS_Monitor
                 this.Left = workingArea.Right - this.Width - 20;
                 this.Top = workingArea.Bottom - this.Height - 20;
 
-                if (Properties.Settings.Default.IsFirstRun && CurrentPage != "Settings")
+                if (Properties.Settings.Default.IsFirstRun)
+                    SwitchPage(MonitorPage.Settings);
+                else
                 {
-                    Content.Content = new SettingsPage(true, SettingsDismiss);
+                    SwitchPage(MonitorPage.Data);
+                    _DataPage.LoadData(true);
                 }
-                else { LoadData(DataTime == null ? false : true); }
 
                 this.Show();
                 IsOpen = true;
@@ -64,35 +76,60 @@ namespace C_AWS_Monitor
             Close();
         }
 
-        private void Refresh_Click(object sender, RoutedEventArgs e)
+        private void refresh_Click(object sender, RoutedEventArgs e)
         {
-            LoadData(false);
+            if (CurrentPage == MonitorPage.Data)
+                _DataPage.LoadData(false);
         }
-        private void Settings_Click(object sender, RoutedEventArgs e)
+        private void settings_Click(object sender, RoutedEventArgs e)
         {
-            IsSettingsOpen = true;
-            SettingsOverlay.Visibility = Visibility.Visible;
-
-            if (!Properties.Settings.Default.IsFirstRun)
-            { DataEndpoint.Text = Properties.Settings.Default.DataEndpoint; }
-            DataEndpoint.Focus();
+            if (CurrentPage != MonitorPage.Settings)
+                SwitchPage(MonitorPage.Settings);
         }
-
-        
-
-        
-
-        private void More_Click(object sender, RoutedEventArgs e)
+        private void more_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(Properties.Settings.Default.DataEndpoint);
+            if (Properties.Settings.Default.DataEndpoint != null)
+                Process.Start(Properties.Settings.Default.DataEndpoint);
         }
 
-        private void SettingsDismiss(string data)
+        private void SwitchPage(MonitorPage targetPage)
         {
-            if (data == "save")
+            CurrentPage = targetPage;
+
+            switch (targetPage)
             {
+                case MonitorPage.Data:
+                    {
+                        pageDisplay.Content = _DataPage;
+                        refresh.IsEnabled = true;
+                        settings.IsEnabled = true;
 
+                        if (Properties.Settings.Default.DataEndpoint == null)
+                            more.IsEnabled = false;
+                        else more.IsEnabled = true;
+                        break;
+                    }
+                case MonitorPage.Settings:
+                    {
+                        pageDisplay.Content = new SettingsPage(SettingsDismiss);
+                        refresh.IsEnabled = false;
+                        settings.IsEnabled = false;
+
+                        if (Properties.Settings.Default.DataEndpoint == null)
+                            more.IsEnabled = false;
+                        else more.IsEnabled = true;
+                        break;
+                    }
+                default: break;
             }
         }
+
+        private void SettingsDismiss(bool didSave)
+        {
+            SwitchPage(MonitorPage.Data);
+            _DataPage.LoadData(didSave ? false : true);
+        }
+
+        private enum MonitorPage { None, Settings, Data };
     }
 }

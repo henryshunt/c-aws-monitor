@@ -1,27 +1,24 @@
 ﻿<Page x:Class="C_AWS_Monitor.SettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:C_AWS_Monitor"
-      mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="SettingsPage" Loaded="Page_Loaded">
+      Title="SettingsPage" Loaded="Page_Loaded" Margin="20">
 
     <Grid>
-        <Label Content="Data Source URL:" VerticalAlignment="Top" Padding="10,0,0,0" Foreground="#FFE6E6E6"/>
-        <TextBox x:Name="DataEndpoint" Height="23" Margin="0,21,0,0" TextWrapping="Wrap" Text="***REMOVED***" VerticalAlignment="Top" Padding="2,1,0,0"/>
+        <StackPanel Margin="0,0,0,81">
+            <Label Content="Data Source URL:" VerticalAlignment="Top" Padding="10,0,0,0" Foreground="#FFE6E6E6"/>
+            <TextBox x:Name="dataEndpoint" Height="23" Margin="0,5,0,0" TextWrapping="Wrap" Text="***REMOVED***" VerticalAlignment="Top" Padding="2,1,0,0"/>
+        </StackPanel>
 
-        <Button x:Name="Exit" Content="Exit C-AWS Monitor" Margin="0,0,0,36.5" Padding="1,0,1,3" Click="Exit_Click" Height="25" VerticalAlignment="Bottom"/>
+        <Button x:Name="Exit" Content="Exit C-AWS Monitor" Margin="0,0,0,36" Padding="1,0,1,3" Click="exit_Click" Height="25" VerticalAlignment="Bottom"/>
 
-        <Grid Margin="0,0,0,0.5" Height="36" VerticalAlignment="Bottom">
+        <Grid Height="36" VerticalAlignment="Bottom">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="Save" Content="Save" Margin="0,10,5,0" ToolTip="Save and close settings" Padding="1,0,1,3" Click="Save_Click"/>
-            <Button x:Name="Cancel" Content="Cancel" Margin="5,10,0,0" ToolTip="Cancel changes and close settings" Padding="1,0,1,3" Click="Cancel_Click" Grid.Column="1"/>
+            <Button x:Name="Save" Content="Save" Margin="0,10,5,0" ToolTip="Save and close settings" Padding="1,0,1,3" Click="save_Click"/>
+            <Button x:Name="Cancel" Content="Cancel" Margin="5,10,0,0" ToolTip="Cancel changes and close settings" Padding="1,0,1,3" Click="cancel_Click" Grid.Column="1"/>
         </Grid>
     </Grid>
 </Page>
