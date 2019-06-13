@@ -1,6 +1,7 @@
 ﻿using C_AWSMonitor.Windows;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Windows;
 using NotifyIcon = System.Windows.Forms.NotifyIcon;
 
@@ -18,7 +19,10 @@ namespace C_AWSMonitor
 
             TrayWindow.Closed += TrayWindow_Closed;
 
-            TrayIcon.Icon = new Icon("Resources/Icon.ico");
+            using (Stream iconStream = GetResourceStream(new Uri(
+                "pack://application:,,,/C-AWSMonitor;component/Resources/Icon.ico")).Stream)
+            { TrayIcon.Icon = new Icon(iconStream); }
+
             TrayIcon.Visible = true;
         }
 

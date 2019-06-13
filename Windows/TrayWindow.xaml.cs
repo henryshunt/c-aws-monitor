@@ -58,7 +58,10 @@ namespace C_AWSMonitor.Windows
                 Top = workingArea.Bottom - Height - 20;
 
                 if (Properties.Settings.Default.IsFirstRun)
+                {
                     SwitchPage(MonitorPage.Settings);
+                    LabelPageTitle.Content = "Setup C-AWS Monitor";
+                }
                 else
                 {
                     SwitchPage(MonitorPage.Data);
