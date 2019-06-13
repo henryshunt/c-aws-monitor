@@ -93,7 +93,7 @@ namespace C_AWSMonitor
                     Application.Current.Dispatcher.Invoke(delegate
                     {
                         if (reportJson.AirT != null)
-                            LabelAirT.Content = reportJson.AirT.ToString() + "°C";
+                            LabelAirT.Content = ((double)reportJson.AirT).ToString("0.0") + "°C";
                         else LabelAirT.Content = "No Data";
 
                         // Add points to chart
@@ -106,17 +106,17 @@ namespace C_AWSMonitor
                             if (item.y != null)
                             {
                                 Instant utc2 = Instant.FromUnixTimeSeconds(item.x);
-                                ChartModel.AddPoint(utc2.InZone(dtz).ToDateTimeUnspecified(), 
+                                ChartModel.AddPoint(utc2.InZone(dtz).ToDateTimeUnspecified(),
                                     (double)item.y);
                             }
                         }
 
                         if (reportJson.RelH != null)
-                            LabelRelH.Content = reportJson.RelH.ToString() + "%";
+                            LabelRelH.Content = ((double)reportJson.RelH).ToString("0.0") + "%";
                         else LabelRelH.Content = "No Data";
 
                         if (reportJson.WSpd != null)
-                            LabelWSpd.Content = reportJson.WSpd.ToString() + " mph";
+                            LabelWSpd.Content = ((double)reportJson.WSpd).ToString("0.0;0") + " mph";
                         else LabelWSpd.Content = "No Data";
 
                         if (reportJson.WDir != null)
@@ -124,45 +124,48 @@ namespace C_AWSMonitor
                         else LabelWDir.Content = "No Data";
 
                         if (reportJson.WGst != null)
-                            LabelWGst.Content = reportJson.WGst.ToString() + " mph";
+                            LabelWGst.Content = ((double)reportJson.WGst).ToString("0.0") + " mph";
                         else LabelWGst.Content = "No Data";
 
                         if (reportJson.SunD_PHr != null)
                         {
-                            LabelSunDPHr.Content = (
-                                reportJson.SunD_PHr / 60).ToString() + " min";
+                            TimeSpan ts = TimeSpan.FromSeconds((double)reportJson.SunD_PHr);
+                            LabelSunDPHr.Content = new DateTime(ts.Ticks).ToString("HH:mm:ss");
                         }
                         else LabelSunDPHr.Content = "No Data";
 
                         if (reportJson.Rain_PHr != null)
                         {
-                            LabelRainPHr.Content = Math.Round(
-                                (double)reportJson.Rain_PHr, 2).ToString() + " mm";
+                            LabelRainPHr.Content =
+                                ((double)reportJson.Rain_PHr).ToString("0.00") + " mm";
                         }
                         else LabelRainPHr.Content = "No Data";
 
                         if (reportJson.MSLP != null)
-                            LabelMSLP.Content = reportJson.MSLP.ToString() + " hPa";
+                            LabelMSLP.Content = ((double)reportJson.MSLP).ToString("0.0") + " hPa";
                         else LabelMSLP.Content = "No Data";
 
                         if (reportJson.StaP_PTH != null)
-                            LabelStaPPTH.Content = reportJson.StaP_PTH.ToString() + " hPa";
+                        {
+                            LabelStaPPTH.Content =
+                                ((double)reportJson.StaP_PTH).ToString("+0.0;-0.0") + " hPa";
+                        }
                         else LabelStaPPTH.Content = "No Data";
 
                         if (reportJson.ST10 != null)
-                            LabelST10.Content = reportJson.ST10.ToString() + "°C";
+                            LabelST10.Content = ((double)reportJson.ST10).ToString("0.0") + "°C";
                         else LabelST10.Content = "No Data";
 
                         if (reportJson.ST30 != null)
-                            LabelST30.Content = reportJson.ST30.ToString() + "°C";
+                            LabelST30.Content = ((double)reportJson.ST30).ToString("0.0") + "°C";
                         else LabelST30.Content = "No Data";
 
                         if (reportJson.ST00 != null)
-                            LabelST00.Content = reportJson.ST00.ToString() + "°C";
+                            LabelST00.Content = ((double)reportJson.ST00).ToString("0.0") + "°C";
                         else LabelST00.Content = "No Data";
 
                         if (envReportJson.CPUT != null)
-                            LabelCPUT.Content = envReportJson.CPUT.ToString() + "°C";
+                            LabelCPUT.Content = ((double)envReportJson.CPUT).ToString("0.0") + "°C";
                         else LabelCPUT.Content = "No Data";
 
                         // Calculate chart boundaries
