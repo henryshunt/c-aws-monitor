@@ -23,6 +23,11 @@ namespace C_AWSMonitor.Windows
             _DataPage.DataDownloadStarted += _DataPage_DataDownloadStarted;
             _DataPage.DataDownloadCompleted += _DataPage_DataDownloadCompleted;
         }
+        private void Window_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Escape)
+                OnDeactivated(new EventArgs());
+        }
 
         private void _DataPage_DataDownloadStarted(object sender, EventArgs e)
         {
