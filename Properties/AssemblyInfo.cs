@@ -8,11 +8,11 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("C-AWS Monitor")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("System tray application to view live C-AWS station data")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Henry Hunt")]
 [assembly: AssemblyProduct("C-AWS Monitor")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyCopyright("Copyright © Henry Hunt 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

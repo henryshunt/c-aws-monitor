@@ -18,9 +18,7 @@ namespace C_AWSMonitor
 
             TrayWindow.Closed += TrayWindow_Closed;
 
-            // Set the tray icon from a PNG file
-            var bitmap = new Bitmap("Resources/Icon.png");
-            TrayIcon.Icon = Icon.FromHandle(bitmap.GetHicon());
+            TrayIcon.Icon = new Icon("Resources/Icon.ico");
             TrayIcon.Visible = true;
         }
 
