@@ -42,10 +42,13 @@ namespace C_AWSMonitor
         {
             try
             {
+                // Request AWS info to check entered URL is valid
                 string awsInfoUrl = Path.Combine(
                     TextBoxEndpoint.Text + "/", "data/aws-info.php");
 
                 string awsInfoData = new WebClient().DownloadString(awsInfoUrl);
+                if (awsInfoData == "null") throw new Exception();
+
                 AWSInfoJSON awsInfoJson = JsonConvert.DeserializeObject<AWSInfoJSON>(
                     awsInfoData, new JsonSerializerSettings
                     { NullValueHandling = NullValueHandling.Ignore });
