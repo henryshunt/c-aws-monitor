@@ -46,5 +46,17 @@ namespace C_AWSMonitor.Properties {
                 this["DataEndpoint"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string AWSTimeZone {
+            get {
+                return ((string)(this["AWSTimeZone"]));
+            }
+            set {
+                this["AWSTimeZone"] = value;
+            }
+        }
     }
 }

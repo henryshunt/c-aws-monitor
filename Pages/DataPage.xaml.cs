@@ -1,21 +1,14 @@
 ﻿using Newtonsoft.Json;
+using NodaTime;
 using OxyPlot.Axes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using C_AWSMonitor.Routines;
 
 namespace C_AWSMonitor
 {
@@ -23,9 +16,9 @@ namespace C_AWSMonitor
     {
         private bool IsLoading = false;
 
-        private ChartViewModel ChartModel = new ChartViewModel();
         public DateTime DataTime { get; private set; }
-        DateTime LastUpdated;
+        private DateTime LastUpdated;
+        private ChartViewModel ChartModel = new ChartViewModel();
 
         public event EventHandler DataDownloadStarted;
         public event EventHandler DataDownloadCompleted;
@@ -33,21 +26,17 @@ namespace C_AWSMonitor
         public DataPage()
         {
             InitializeComponent();
+            PlotAirT.DataContext = ChartModel;
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            AirTChart.DataContext = ChartModel;
-        }
-
-        public void LoadData(bool checkUpdated)
+        public void LoadData(bool forceRefresh)
         {
             if (IsLoading) return;
 
             // Don't download new data if current is less than a minute old
-            if (checkUpdated)
+            if (!forceRefresh)
             {
-                if (LastUpdated != null)
+                if (LastUpdated != DateTime.MinValue)
                 {
                     TimeSpan difference = DateTime.UtcNow - LastUpdated;
                     if (difference.TotalMinutes < 1) return;
@@ -61,65 +50,127 @@ namespace C_AWSMonitor
                     Application.Current.Dispatcher.Invoke(delegate
                     { DataDownloadStarted?.Invoke(this, new EventArgs()); });
 
-                    // Get temporary current time
-                    DateTime _LastUpdated = DateTime.UtcNow;
-                    string utc = _LastUpdated.ToString("yyyy-MM-dd'T'HH-mm-00");
+                    DateTime dataTime = DateTime.UtcNow;
+                    string utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
 
                     // Download and deserialise report for current time
-                    string recordUrl = Properties.Settings.Default.DataEndpoint + "/data/now2.php?time=" + utc;
-                    string recordData = new WebClient().DownloadString(recordUrl);
-                    ReportJSON recordJson = JsonConvert.DeserializeObject<ReportJSON>(recordData,
-                        new JsonSerializerSettings
-                        { NullValueHandling = NullValueHandling.Ignore });
+                    string reportUrl = Path.Combine(Properties.Settings.Default
+                        .DataEndpoint + "/", "data/now.php?time=" + utc);
+
+                    string reportData = new WebClient().DownloadString(reportUrl);
+                    ReportJSON reportJson = JsonConvert.DeserializeObject<ReportJSON>(
+                        reportData);
+
+                    // Recalibrate time to returned record time
+                    dataTime = DateTime.Parse(reportJson.Time);
+                    dataTime = DateTime.SpecifyKind(dataTime, DateTimeKind.Utc);
+                    utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
+
 
                     // Download and deserialise environment report for current time
-                    //string envUrl = Properties.Settings.Default.DataEndpoint + "/data/about.php?time=" + utc;
-                    //string envData = new WebClient().DownloadString(envUrl);
-                    //EnvReportJSON envJson = JsonConvert.DeserializeObject<EnvReportJSON>(envData,
-                    //    new JsonSerializerSettings
-                    //    { NullValueHandling = NullValueHandling.Ignore });
+                    string reportEnvUrl = Path.Combine(Properties.Settings.Default
+                        .DataEndpoint + "/", "data/station.php?time=" + utc + "&abs=1");
+
+                    string reportEnvData = new WebClient().DownloadString(reportEnvUrl);
+                    EnvReportJSON envReportJson = JsonConvert.DeserializeObject<EnvReportJSON>(
+                        reportEnvData);
+
 
                     // Download and deserialise chart data for current day
-                    //string graphUrl = Properties.Settings.Default.DataEndpoint + "/data/graph-day.php?time=" + utc + "&fields=AirT";
-                    //string graphData = new WebClient().DownloadString(graphUrl).Replace("[[", "[").Replace("]]", "]");
-                    //List<PointJSON> graphJson = JsonConvert.DeserializeObject<List<PointJSON>>(graphData,
-                    //    new JsonSerializerSettings
-                    //    { NullValueHandling = NullValueHandling.Ignore });
+                    string graphUrl = Path.Combine(Properties.Settings.Default
+                        .DataEndpoint + "/", "data/graph-day.php?time=" + utc
+                        + "&fields=AirT");
 
-                    LastUpdated = _LastUpdated;
-                    DataTime = DateTime.Parse(recordJson.Time);
+                    string graphData = new WebClient().DownloadString(graphUrl)
+                        .Replace("[[", "[").Replace("]]", "]");
+                    List<ChartPointJSON> graphJson = JsonConvert.DeserializeObject<List<
+                        ChartPointJSON>>(graphData);
 
-                    // Display the downloaded data in the interface
+                    LastUpdated = dataTime;
+                    DataTime = dataTime;
+
+                    // Display downloaded data in the interface
                     Application.Current.Dispatcher.Invoke(delegate
                     {
-                        AirTValue.Content = recordJson.AirT.ToString() + "°C";
+                        if (reportJson.AirT != null)
+                            LabelAirT.Content = reportJson.AirT.ToString() + "°C";
+                        else LabelAirT.Content = "No Data";
 
                         // Add points to chart
                         ChartModel.ClearPoints();
-                        //foreach (var item in graphJson)
-                        //{
-                        //    ChartModel.AddPoint(Convert.ToInt32(item.x), item.y);
-                        //}
+                        DateTimeZone dtz = DateTimeZoneProviders.Tzdb.GetZoneOrNull(
+                            Properties.Settings.Default.AWSTimeZone);
 
-                        RelHValue.Content = recordJson.RelH.ToString() + "%";
-                        WSpdValue.Content = recordJson.WSpd.ToString() + " mph";
-                        WDirValue.Content = recordJson.WDir.ToString() + "°";
-                        WGstValue.Content = recordJson.WGst.ToString() + " mph";
-                        SunD_PHrValue.Content = (recordJson.SunD_PHr / 60).ToString() + " min";
-                        Rain_PHrValue.Content = recordJson.Rain_PHr.ToString() + " mm";
-                        MSLPValue.Content = recordJson.MSLP.ToString() + " hPa";
-                        ST10Value.Content = recordJson.ST10.ToString() + "°C";
-                        ST30Value.Content = recordJson.ST30.ToString() + "°C";
-                        ST00Value.Content = recordJson.ST00.ToString() + "°C";
-                        //CPUTValue.Content = envJson.CPUT.ToString() + "°C";
+                        foreach (var item in graphJson)
+                        {
+                            if (item.y != null)
+                            {
+                                Instant utc2 = Instant.FromUnixTimeSeconds(item.x);
+                                ChartModel.AddPoint(utc2.InZone(dtz).ToDateTimeUnspecified(), 
+                                    (double)item.y);
+                            }
+                        }
 
-                        // Calculate current day boundaries for the chart
-                        var bounds = DayBounds(_LastUpdated);
-                        GraphXAxis.Minimum = DateTimeAxis.ToDouble(bounds.Item1);
-                        GraphXAxis.Maximum = DateTimeAxis.ToDouble(bounds.Item2);
+                        if (reportJson.RelH != null)
+                            LabelRelH.Content = reportJson.RelH.ToString() + "%";
+                        else LabelRelH.Content = "No Data";
 
+                        if (reportJson.WSpd != null)
+                            LabelWSpd.Content = reportJson.WSpd.ToString() + " mph";
+                        else LabelWSpd.Content = "No Data";
+
+                        if (reportJson.WDir != null)
+                            LabelWDir.Content = reportJson.WDir.ToString() + "°";
+                        else LabelWDir.Content = "No Data";
+
+                        if (reportJson.WGst != null)
+                            LabelWGst.Content = reportJson.WGst.ToString() + " mph";
+                        else LabelWGst.Content = "No Data";
+
+                        if (reportJson.SunD_PHr != null)
+                        {
+                            LabelSunDPHr.Content = (
+                                reportJson.SunD_PHr / 60).ToString() + " min";
+                        }
+                        else LabelSunDPHr.Content = "No Data";
+
+                        if (reportJson.Rain_PHr != null)
+                        {
+                            LabelRainPHr.Content = Math.Round(
+                                (double)reportJson.Rain_PHr, 2).ToString() + " mm";
+                        }
+                        else LabelRainPHr.Content = "No Data";
+
+                        if (reportJson.MSLP != null)
+                            LabelMSLP.Content = reportJson.MSLP.ToString() + " hPa";
+                        else LabelMSLP.Content = "No Data";
+
+                        if (reportJson.StaP_PTH != null)
+                            LabelStaPPTH.Content = reportJson.StaP_PTH.ToString() + " hPa";
+                        else LabelStaPPTH.Content = "No Data";
+
+                        if (reportJson.ST10 != null)
+                            LabelST10.Content = reportJson.ST10.ToString() + "°C";
+                        else LabelST10.Content = "No Data";
+
+                        if (reportJson.ST30 != null)
+                            LabelST30.Content = reportJson.ST30.ToString() + "°C";
+                        else LabelST30.Content = "No Data";
+
+                        if (reportJson.ST00 != null)
+                            LabelST00.Content = reportJson.ST00.ToString() + "°C";
+                        else LabelST00.Content = "No Data";
+
+                        if (envReportJson.CPUT != null)
+                            LabelCPUT.Content = envReportJson.CPUT.ToString() + "°C";
+                        else LabelCPUT.Content = "No Data";
+
+                        // Calculate chart boundaries
+                        var bounds = Helpers.GetDayBounds(dataTime);
+                        DateTimeAxisAirTX.Minimum = DateTimeAxis.ToDouble(bounds.Item1);
+                        DateTimeAxisAirTX.Maximum = DateTimeAxis.ToDouble(bounds.Item2);
                         SetYAxisSettings();
-                        AirTChart.InvalidatePlot();
+                        PlotAirT.InvalidatePlot();
 
                         DataDownloadCompleted?.Invoke(this, new EventArgs());
                     });
@@ -131,76 +182,37 @@ namespace C_AWSMonitor
             catch { DataDownloadCompleted?.Invoke(this, new EventArgs()); }
         }
 
-        private Tuple<DateTime, DateTime> DayBounds(DateTime utc)
-        {
-            DateTime start = new DateTime(utc.Year, utc.Month, utc.Day);
-            DateTime end = start.AddDays(1);
-
-            return new Tuple<DateTime, DateTime>(start, end);
-        }
         private void SetYAxisSettings()
         {
             double min = ChartModel.GetMinimum();
             double max = ChartModel.GetMaximum();
             double range = max - min;
 
+            // Set axis step size and range based on data range
             if (range <= 2)
             {
-                GraphYAxis.MajorStep = 0.5;
-                GraphYAxis.Minimum = min - 0.5;
-                GraphYAxis.Maximum = max + 0.5;
+                LinearAxisAirTY.MajorStep = 0.5;
+                LinearAxisAirTY.Minimum = min - 0.5;
+                LinearAxisAirTY.Maximum = max + 0.5;
             }
             else if (range > 2 && range <= 5)
             {
-                GraphYAxis.MajorStep = 1;
-                GraphYAxis.Minimum = min - 0.5;
-                GraphYAxis.Maximum = max + 0.5;
+                LinearAxisAirTY.MajorStep = 1;
+                LinearAxisAirTY.Minimum = min - 0.5;
+                LinearAxisAirTY.Maximum = max + 0.5;
             }
             else if (range > 5 && range <= 10)
             {
-                GraphYAxis.MajorStep = 2;
-                GraphYAxis.Minimum = min - 2;
-                GraphYAxis.Maximum = max + 2;
+                LinearAxisAirTY.MajorStep = 2;
+                LinearAxisAirTY.Minimum = min - 1;
+                LinearAxisAirTY.Maximum = max + 1;
             }
             else if (range > 10 && range <= 25)
             {
-                GraphYAxis.MajorStep = 5;
-                GraphYAxis.Minimum = min - 2;
-                GraphYAxis.Maximum = max + 2;
+                LinearAxisAirTY.MajorStep = 5;
+                LinearAxisAirTY.Minimum = min - 2;
+                LinearAxisAirTY.Maximum = max + 2;
             }
-        }
-
-        private class ReportJSON
-        {
-            public string Time { get; set; }
-            public double AirT { get; set; }
-            public double ExpT { get; set; }
-            public double RelH { get; set; }
-            public double DewP { get; set; }
-            public double WSpd { get; set; }
-            public int WDir { get; set; }
-            public double WGst { get; set; }
-            public int SunD { get; set; }
-            public int SunD_PHr { get; set; }
-            public double Rain { get; set; }
-            public double Rain_PHr { get; set; }
-            public double StaP { get; set; }
-            public double MSLP { get; set; }
-            public double StaP_PTH { get; set; }
-            public double ST10 { get; set; }
-            public double ST30 { get; set; }
-            public double ST00 { get; set; }
-        }
-        private class EnvReportJSON
-        {
-            public string Time { get; set; }
-            public double EncT { get; set; }
-            public double CPUT { get; set; }
-        }
-        private class PointJSON
-        {
-            public string x { get; set; }
-            public double y { get; set; }
         }
     }
 }

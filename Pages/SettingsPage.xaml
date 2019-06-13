@@ -6,10 +6,10 @@
     <Grid>
         <StackPanel Margin="0,0,0,81">
             <Label Content="Data Source URL:" VerticalAlignment="Top" Padding="10,0,0,0" Foreground="#FFE6E6E6"/>
-            <TextBox x:Name="dataEndpoint" Height="23" Margin="0,5,0,0" TextWrapping="Wrap" Text="***REMOVED***" VerticalAlignment="Top" Padding="2,1,0,0"/>
+            <TextBox x:Name="TextBoxEndpoint" Height="23" Margin="0,5,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Padding="2,1,0,0"/>
         </StackPanel>
 
-        <Button x:Name="Exit" Content="Exit C-AWS Monitor" Margin="0,0,0,36" Padding="1,0,1,3" Click="exit_Click" Height="25" VerticalAlignment="Bottom"/>
+        <Button x:Name="ButtonExit" Content="Exit C-AWS Monitor" Margin="0,0,0,36" Padding="1,1,1,3" Click="ButtonExit_Click" Height="25" VerticalAlignment="Bottom"/>
 
         <Grid Height="36" VerticalAlignment="Bottom">
             <Grid.ColumnDefinitions>
@@ -17,8 +17,8 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="Save" Content="Save" Margin="0,10,5,0" ToolTip="Save and close settings" Padding="1,0,1,3" Click="save_Click"/>
-            <Button x:Name="Cancel" Content="Cancel" Margin="5,10,0,0" ToolTip="Cancel changes and close settings" Padding="1,0,1,3" Click="cancel_Click" Grid.Column="1"/>
+            <Button x:Name="ButtonSave" Content="Save" Margin="0,10,5,0" ToolTip="Save and close settings" Padding="1,1,1,3" Click="ButtonSave_Click"/>
+            <Button x:Name="ButtonCancel" Content="Cancel" Margin="5,10,0,0" ToolTip="Cancel changes and close settings" Padding="1,1,1,3" Click="ButtonCancel_Click" Grid.Column="1" IsEnabled="False"/>
         </Grid>
     </Grid>
 </Page>

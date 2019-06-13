@@ -2,52 +2,72 @@
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.IO;
+using Newtonsoft.Json;
+using C_AWSMonitor.Routines;
 
 namespace C_AWSMonitor
 {
     public partial class SettingsPage : Page
     {
         private bool IsSetupMode = false;
-        private Action<bool> DismissCallback;
 
-        public SettingsPage(Action<bool> dismissCallback)
+        public event EventHandler ExitButtonClicked;
+        public event EventHandler<SettingsDismissedEventArgs> SettingsDismissed;
+
+        public SettingsPage()
         {
             if (Properties.Settings.Default.IsFirstRun)
                 IsSetupMode = true;
 
-            DismissCallback = dismissCallback;
             InitializeComponent();
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            if (IsSetupMode)
-                Cancel.IsEnabled = false;
+            if (!IsSetupMode)
+            {
+                ButtonCancel.IsEnabled = true;
+                TextBoxEndpoint.Text = Properties.Settings.Default.DataEndpoint;
+            }
+
+            TextBoxEndpoint.Focus();
         }
 
-        private void exit_Click(object sender, RoutedEventArgs e)
+        private void ButtonExit_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            ExitButtonClicked?.Invoke(this, new EventArgs());
         }
-        private void save_Click(object sender, RoutedEventArgs e)
+        private void ButtonSave_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                new WebClient().DownloadString(dataEndpoint.Text);
-                Properties.Settings.Default.DataEndpoint = dataEndpoint.Text;
+                string awsInfoUrl = Path.Combine(
+                    TextBoxEndpoint.Text + "/", "data/aws-info.php");
+
+                string awsInfoData = new WebClient().DownloadString(awsInfoUrl);
+                AWSInfoJSON awsInfoJson = JsonConvert.DeserializeObject<AWSInfoJSON>(
+                    awsInfoData, new JsonSerializerSettings
+                    { NullValueHandling = NullValueHandling.Ignore });
+
+                Properties.Settings.Default.DataEndpoint = TextBoxEndpoint.Text;
+                Properties.Settings.Default.AWSTimeZone = awsInfoJson.TimeZone;
                 Properties.Settings.Default.IsFirstRun = false;
                 Properties.Settings.Default.Save();
-                DismissCallback(true);
+
+                SettingsDismissed?.Invoke(this,
+                    new SettingsDismissedEventArgs(DismissType.Save));
             }
             catch
             {
-                dataEndpoint.Focus();
-                dataEndpoint.SelectAll();
+                TextBoxEndpoint.Focus();
+                TextBoxEndpoint.Clear();
             }
         }
-        private void cancel_Click(object sender, RoutedEventArgs e)
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
-            DismissCallback(false);
+            SettingsDismissed?.Invoke(this,
+                new SettingsDismissedEventArgs(DismissType.Cancel));
         }
     }
 }

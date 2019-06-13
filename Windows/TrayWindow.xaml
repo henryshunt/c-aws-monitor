@@ -1,0 +1,19 @@
+﻿<Window x:Class="C_AWSMonitor.Windows.TrayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wpfspark="clr-namespace:WPFSpark;assembly=WPFSpark"        
+        Height="537" Width="350" WindowStyle="None" Background="#FF1E1E1E" ResizeMode="NoResize" ShowInTaskbar="False" BorderBrush="#FF323232" BorderThickness="3" Loaded="Window_Loaded" Topmost="True">
+
+    <Grid>
+        <Grid VerticalAlignment="Top" Background="#FF323232" Margin="0">
+            <Label x:Name="LabelPageTitle" Margin="10,7,120,10" Padding="0" FontSize="15" Foreground="#FFE6E6E6" FontWeight="Bold" Height="20"/>
+
+            <wpfspark:SprocketControl x:Name="SprocketControlSpinner" HorizontalAlignment="Center" Margin="229,2,85,0" TickColor="#F35168" Width="30" TickWidth="1.5" TickCount="12" IsIndeterminate="True" Interval="65" Height="30" VerticalAlignment="Top" Visibility="Collapsed"/>
+            <Button x:Name="ButtonRefresh" Content="&#xE117;" HorizontalAlignment="Right" Margin="0,0,60,10" Width="20" FontFamily="Segoe UI Symbol" FontSize="10" ToolTip="Refresh Data" Click="ButtonRefresh_Click" Height="20" VerticalAlignment="Bottom" IsEnabled="False"/>
+            <Button x:Name="ButtonSettings" Content="&#xE115;" HorizontalAlignment="Right" Margin="0,0,35,10" Width="20" FontFamily="Segoe UI Symbol" FontSize="15" Padding="0,-1,1,1" ToolTip="Settings" Height="20" VerticalAlignment="Bottom" Click="ButtonSettings_Click" IsEnabled="False"/>
+            <Button x:Name="ButtonMore" Content="&#xE10C;" HorizontalAlignment="Right" Margin="0,0,10,10" Width="20" FontFamily="Segoe UI Symbol" FontSize="10" ToolTip="View more data on website" Click="ButtonMore_Click" Height="20" VerticalAlignment="Bottom" IsEnabled="False"/>
+        </Grid>
+
+        <Frame x:Name="FramePageDisplay" Margin="0,37,0,0" NavigationUIVisibility="Hidden"/>
+    </Grid>
+</Window>
