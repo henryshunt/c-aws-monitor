@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using C_AWSMonitor.Routines;
+using static C_AWSMonitor.Routines.Helpers;
 
 namespace C_AWSMonitor
 {
@@ -120,7 +121,10 @@ namespace C_AWSMonitor
                         else LabelWSpd.Content = "No Data";
 
                         if (reportJson.WDir != null)
-                            LabelWDir.Content = reportJson.WDir.ToString() + "°";
+                        {
+                            LabelWDir.Content = reportJson.WDir.ToString()
+                                + "° (" + DegreesToCompass((int)reportJson.WDir) + ")";
+                        }
                         else LabelWDir.Content = "No Data";
 
                         if (reportJson.WGst != null)
