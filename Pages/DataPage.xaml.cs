@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using NodaTime;
 using OxyPlot.Axes;
 using System;
 using System.Collections.Generic;
@@ -99,17 +98,11 @@ namespace C_AWSMonitor
 
                         // Add points to chart
                         ChartModel.ClearPoints();
-                        DateTimeZone dtz = DateTimeZoneProviders.Tzdb.GetZoneOrNull(
-                            Properties.Settings.Default.AWSTimeZone);
 
                         foreach (var item in graphJson)
                         {
                             if (item.y != null)
-                            {
-                                Instant utc2 = Instant.FromUnixTimeSeconds(item.x);
-                                ChartModel.AddPoint(utc2.InZone(dtz).ToDateTimeUnspecified(),
-                                    (double)item.y);
-                            }
+                                ChartModel.AddPoint(UTCToLocal(item.x), (double)item.y);
                         }
 
                         if (reportJson.RelH != null)
@@ -173,7 +166,7 @@ namespace C_AWSMonitor
                         else LabelCPUT.Content = "No Data";
 
                         // Calculate chart boundaries
-                        var bounds = Helpers.GetDayBounds(dataTime);
+                        var bounds = GetDayBounds(UTCToLocal(dataTime));
                         DateTimeAxisAirTX.Minimum = DateTimeAxis.ToDouble(bounds.Item1);
                         DateTimeAxisAirTX.Maximum = DateTimeAxis.ToDouble(bounds.Item2);
                         SetYAxisSettings();

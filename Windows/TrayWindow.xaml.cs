@@ -1,8 +1,8 @@
 ﻿using C_AWSMonitor.Routines;
-using NodaTime;
 using System;
 using System.Diagnostics;
 using System.Windows;
+using static C_AWSMonitor.Routines.Helpers;
 
 namespace C_AWSMonitor.Windows
 {
@@ -44,12 +44,8 @@ namespace C_AWSMonitor.Windows
 
             if (_DataPage.DataTime != DateTime.MinValue)
             {
-                DateTimeZone dtz = DateTimeZoneProviders.Tzdb.GetZoneOrNull(
-                    Properties.Settings.Default.AWSTimeZone);
-                Instant utc = Instant.FromDateTimeUtc(_DataPage.DataTime);
-
-                LabelPageTitle.Content = "Data on "
-                    + utc.InZone(dtz).ToString("dd/MM/yyyy 'at' HH:mm", null);
+                LabelPageTitle.Content = "Data on " + UTCToLocal(
+                    _DataPage.DataTime).ToString("dd/MM/yyyy 'at' HH:mm", null);
             }
         }
 

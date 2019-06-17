@@ -1,13 +1,32 @@
-﻿using System;
+﻿using NodaTime;
+using System;
 
 namespace C_AWSMonitor.Routines
 {
     public static class Helpers
     {
-        public static Tuple<DateTime, DateTime> GetDayBounds(DateTime utc)
+        public static DateTime UTCToLocal(DateTime utc)
         {
-            // Return start and end of UTC date
-            DateTime start = new DateTime(utc.Year, utc.Month, utc.Day);
+            DateTimeZone dtz = DateTimeZoneProviders.Tzdb.GetZoneOrNull(
+                Properties.Settings.Default.AWSTimeZone);
+
+            Instant utc2 = Instant.FromDateTimeUtc(utc);
+            return utc2.InZone(dtz).ToDateTimeUnspecified();
+        }
+
+        public static DateTime UTCToLocal(long utc)
+        {
+            DateTimeZone dtz = DateTimeZoneProviders.Tzdb.GetZoneOrNull(
+                Properties.Settings.Default.AWSTimeZone);
+
+            Instant utc2 = Instant.FromUnixTimeSeconds(utc);
+            return utc2.InZone(dtz).ToDateTimeUnspecified();
+        }
+
+        public static Tuple<DateTime, DateTime> GetDayBounds(DateTime time)
+        {
+            // Return start and end of time
+            DateTime start = new DateTime(time.Year, time.Month, time.Day);
             DateTime end = start.AddDays(1);
 
             return new Tuple<DateTime, DateTime>(start, end);
