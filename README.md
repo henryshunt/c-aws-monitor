@@ -4,7 +4,7 @@ A simple Windows system tray application for viewing live data supplied by [C-AW
 # Usage
 - Setup an instance of [C-AWS Server](https://github.com/henryshunt/c-aws-server) to supply data.
 - Open the project in Visual Studio, restore the NuGet packages, and run the project.
-- Enter the address of the server in the program, and data will display.
+- Enter the address of the C-AWS Server root directory into the program, and data will display.
 
 # Dependencies
 - Json.NET
