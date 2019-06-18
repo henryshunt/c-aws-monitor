@@ -9,6 +9,5 @@ A simple Windows system tray application for viewing live data supplied by [C-AW
 # Dependencies
 - Json.NET
 - NodaTime
-- OxyPlot.Core
-- OxyPlot.WPF
+- OxyPlot
 - WPFSpark
