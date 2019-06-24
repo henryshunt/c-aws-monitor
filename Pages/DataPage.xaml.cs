@@ -109,8 +109,12 @@ namespace C_AWSMonitor
                             LabelRelH.Content = ((double)reportJson.RelH).ToString("0.0") + "%";
                         else LabelRelH.Content = "No Data";
 
+                        if (reportJson.DewP != null)
+                            LabelDewP.Content = ((double)reportJson.DewP).ToString("0.0") + "°C";
+                        else LabelDewP.Content = "No Data";
+
                         if (reportJson.WSpd != null)
-                            LabelWSpd.Content = ((double)reportJson.WSpd).ToString("0.0;0") + " mph";
+                            LabelWSpd.Content = ((double)reportJson.WSpd).ToString("0.0") + " mph";
                         else LabelWSpd.Content = "No Data";
 
                         if (reportJson.WDir != null)
