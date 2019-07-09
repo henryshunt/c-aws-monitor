@@ -47,6 +47,7 @@ namespace C_AWSMonitor.Windows
                 LabelPageTitle.Content = "Data on " + UTCToLocal(
                     _DataPage.DataTime).ToString("dd/MM/yyyy 'at' HH:mm", null);
             }
+            else { LabelPageTitle.Content = "Error Loading Data"; }
         }
 
         public void Open()

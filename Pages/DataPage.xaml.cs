@@ -43,9 +43,9 @@ namespace C_AWSMonitor
                 }
             }
 
-            try
+            new Thread(delegate ()
             {
-                Thread worker = new Thread(delegate ()
+                try
                 {
                     Application.Current.Dispatcher.Invoke(delegate
                     { DataDownloadStarted?.Invoke(this, new EventArgs()); });
@@ -178,12 +178,13 @@ namespace C_AWSMonitor
 
                         DataDownloadCompleted?.Invoke(this, new EventArgs());
                     });
-                });
-
-                worker.IsBackground = true;
-                worker.Start();
-            }
-            catch { DataDownloadCompleted?.Invoke(this, new EventArgs()); }
+                }
+                catch
+                {
+                    Application.Current.Dispatcher.Invoke(delegate
+                    { DataDownloadCompleted?.Invoke(this, new EventArgs()); });
+                }
+            }).Start();
         }
 
         private void SetYAxisSettings()
