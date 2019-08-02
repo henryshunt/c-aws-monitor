@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.IO;
 using Newtonsoft.Json;
 using C_AWSMonitor.Routines;
+using static C_AWSMonitor.Routines.JSON;
 
 namespace C_AWSMonitor
 {
@@ -34,6 +35,13 @@ namespace C_AWSMonitor
             TextBoxEndpoint.Focus();
         }
 
+        private void TextBoxEndpoint_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (TextBoxEndpoint.Text.Length == 0)
+                ButtonSave.IsEnabled = false;
+            else ButtonSave.IsEnabled = true;
+        }
+
         private void ButtonExit_Click(object sender, RoutedEventArgs e)
         {
             ExitButtonClicked?.Invoke(this, new EventArgs());
@@ -46,10 +54,10 @@ namespace C_AWSMonitor
                 string awsInfoUrl = Path.Combine(
                     TextBoxEndpoint.Text + "/", "data/aws-info.php");
 
-                string awsInfoData = new WebClient().DownloadString(awsInfoUrl);
+                string awsInfoData = new TimedWebClient(5000).DownloadString(awsInfoUrl);
                 if (awsInfoData == "null") throw new Exception();
 
-                AWSInfoJSON awsInfoJson = JsonConvert.DeserializeObject<AWSInfoJSON>(
+                AWSInfo awsInfoJson = JsonConvert.DeserializeObject<AWSInfo>(
                     awsInfoData, new JsonSerializerSettings
                     { NullValueHandling = NullValueHandling.Ignore });
 

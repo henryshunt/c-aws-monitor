@@ -100,10 +100,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Routines\ChartViewModel.cs" />
-    <Compile Include="Routines\AWSInfoJSON.cs" />
-    <Compile Include="Routines\ChartPointJSON.cs" />
-    <Compile Include="Routines\EnvReportJSON.cs" />
-    <Compile Include="Routines\ReportJSON.cs" />
+    <Compile Include="Routines\JSON.cs" />
     <Compile Include="Pages\DataPage.xaml.cs">
       <DependentUpon>DataPage.xaml</DependentUpon>
     </Compile>
@@ -112,6 +109,9 @@
     </Compile>
     <Compile Include="Routines\Helpers.cs" />
     <Compile Include="Routines\SettingsDismissedEventArgs.cs" />
+    <Compile Include="Routines\TimedWebClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Windows\TrayWindow.xaml.cs">
       <DependentUpon>TrayWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

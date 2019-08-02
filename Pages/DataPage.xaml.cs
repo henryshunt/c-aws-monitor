@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using C_AWSMonitor.Routines;
 using static C_AWSMonitor.Routines.Helpers;
+using static C_AWSMonitor.Routines.JSON;
 
 namespace C_AWSMonitor
 {
@@ -57,8 +58,8 @@ namespace C_AWSMonitor
                     string reportUrl = Path.Combine(Properties.Settings.Default
                         .DataEndpoint + "/", "data/now.php?time=" + utc);
 
-                    string reportData = new WebClient().DownloadString(reportUrl);
-                    ReportJSON reportJson = JsonConvert.DeserializeObject<ReportJSON>(
+                    string reportData = new TimedWebClient(5000).DownloadString(reportUrl);
+                    Report reportJson = JsonConvert.DeserializeObject<Report>(
                         reportData);
 
                     // Recalibrate time to returned record time
@@ -71,8 +72,8 @@ namespace C_AWSMonitor
                     string reportEnvUrl = Path.Combine(Properties.Settings.Default
                         .DataEndpoint + "/", "data/station.php?time=" + utc + "&abs=1");
 
-                    string reportEnvData = new WebClient().DownloadString(reportEnvUrl);
-                    EnvReportJSON envReportJson = JsonConvert.DeserializeObject<EnvReportJSON>(
+                    string reportEnvData = new TimedWebClient(5000).DownloadString(reportEnvUrl);
+                    EnvReport envReportJson = JsonConvert.DeserializeObject<EnvReport>(
                         reportEnvData);
 
 
@@ -81,10 +82,10 @@ namespace C_AWSMonitor
                         .DataEndpoint + "/", "data/graph-day.php?time=" + utc
                         + "&fields=AirT");
 
-                    string graphData = new WebClient().DownloadString(graphUrl)
+                    string graphData = new TimedWebClient(5000).DownloadString(graphUrl)
                         .Replace("[[", "[").Replace("]]", "]");
-                    List<ChartPointJSON> graphJson = JsonConvert.DeserializeObject<List<
-                        ChartPointJSON>>(graphData);
+                    List<ChartPoint> graphJson = JsonConvert.DeserializeObject<List<
+                        ChartPoint>>(graphData);
 
                     LastUpdated = dataTime;
                     DataTime = dataTime;
@@ -101,8 +102,8 @@ namespace C_AWSMonitor
 
                         foreach (var item in graphJson)
                         {
-                            if (item.y != null)
-                                ChartModel.AddPoint(UTCToLocal(item.x), (double)item.y);
+                            if (item.Y != null)
+                                ChartModel.AddPoint(UTCToLocal(item.X), (double)item.Y);
                         }
 
                         if (reportJson.RelH != null)
