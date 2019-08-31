@@ -67,16 +67,6 @@ namespace C_AWSMonitor
                     dataTime = DateTime.SpecifyKind(dataTime, DateTimeKind.Utc);
                     utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
 
-
-                    // Download and deserialise environment report for current time
-                    string reportEnvUrl = Path.Combine(Properties.Settings.Default
-                        .DataEndpoint + "/", "data/station.php?time=" + utc + "&abs=1");
-
-                    string reportEnvData = new TimedWebClient(5000).DownloadString(reportEnvUrl);
-                    EnvReport envReportJson = JsonConvert.DeserializeObject<EnvReport>(
-                        reportEnvData);
-
-
                     // Download and deserialise chart data for current day
                     string graphUrl = Path.Combine(Properties.Settings.Default
                         .DataEndpoint + "/", "data/graph-day.php?time=" + utc
@@ -165,10 +155,6 @@ namespace C_AWSMonitor
                         if (reportJson.ST00 != null)
                             LabelST00.Content = ((double)reportJson.ST00).ToString("0.0") + "°C";
                         else LabelST00.Content = "No Data";
-
-                        if (envReportJson.CPUT != null)
-                            LabelCPUT.Content = ((double)envReportJson.CPUT).ToString("0.0") + "°C";
-                        else LabelCPUT.Content = "No Data";
 
                         // Calculate chart boundaries
                         var bounds = GetDayBounds(UTCToLocal(dataTime));
