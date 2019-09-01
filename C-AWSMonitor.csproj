@@ -109,9 +109,6 @@
     </Compile>
     <Compile Include="Routines\Helpers.cs" />
     <Compile Include="Routines\SettingsDismissedEventArgs.cs" />
-    <Compile Include="Routines\TimedWebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Windows\TrayWindow.xaml.cs">
       <DependentUpon>TrayWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

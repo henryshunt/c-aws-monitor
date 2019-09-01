@@ -6,6 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using C_AWSMonitor.Routines;
 using static C_AWSMonitor.Routines.JSON;
+using System.Threading;
 
 namespace C_AWSMonitor
 {
@@ -13,6 +14,8 @@ namespace C_AWSMonitor
     {
         private bool IsSetupMode = false;
 
+        public event EventHandler SettingsCheckStarted;
+        public event EventHandler SettingsCheckCompleted;
         public event EventHandler ExitButtonClicked;
         public event EventHandler<SettingsDismissedEventArgs> SettingsDismissed;
 
@@ -48,32 +51,59 @@ namespace C_AWSMonitor
         }
         private void ButtonSave_Click(object sender, RoutedEventArgs e)
         {
-            try
+            new Thread(delegate ()
             {
-                // Request AWS info to check entered URL is valid
-                string awsInfoUrl = Path.Combine(
-                    TextBoxEndpoint.Text + "/", "data/aws-info.php");
+                Application.Current.Dispatcher.Invoke(delegate
+                {
+                    SettingsCheckStarted?.Invoke(this, new EventArgs());
+                    TextBoxEndpoint.IsEnabled = false;
+                    ButtonCancel.IsEnabled = false;
+                });
 
-                string awsInfoData = new TimedWebClient(5000).DownloadString(awsInfoUrl);
-                if (awsInfoData == "null") throw new Exception();
+                try
+                {
+                    // Request AWS info to check entered URL is valid
+                    string awsInfoUrl = null;
+                    Application.Current.Dispatcher.Invoke(delegate
+                    {
+                        awsInfoUrl = Path
+                            .Combine(TextBoxEndpoint.Text + "/", "data/aws-info.php");
+                    });
 
-                AWSInfo awsInfoJson = JsonConvert.DeserializeObject<AWSInfo>(
-                    awsInfoData, new JsonSerializerSettings
-                    { NullValueHandling = NullValueHandling.Ignore });
+                    string awsInfoData = Helpers.RequestURL(awsInfoUrl);
+                    if (awsInfoData == "1") throw new Exception("Server-side error");
 
-                Properties.Settings.Default.DataEndpoint = TextBoxEndpoint.Text;
-                Properties.Settings.Default.AWSTimeZone = awsInfoJson.TimeZone;
-                Properties.Settings.Default.IsFirstRun = false;
-                Properties.Settings.Default.Save();
+                    AWSInfo awsInfoJson = JsonConvert.DeserializeObject<AWSInfo>(
+                        awsInfoData, new JsonSerializerSettings
+                        { NullValueHandling = NullValueHandling.Ignore });
 
-                SettingsDismissed?.Invoke(this,
-                    new SettingsDismissedEventArgs(DismissType.Save));
-            }
-            catch
-            {
-                TextBoxEndpoint.Focus();
-                TextBoxEndpoint.Clear();
-            }
+                    Application.Current.Dispatcher.Invoke(delegate
+                    { Properties.Settings.Default.DataEndpoint = TextBoxEndpoint.Text; });
+                    Properties.Settings.Default.AWSTimeZone = awsInfoJson.TimeZone;
+                    Properties.Settings.Default.IsFirstRun = false;
+                    Properties.Settings.Default.Save();
+
+                    Application.Current.Dispatcher.Invoke(delegate
+                    {
+                        SettingsCheckCompleted?.Invoke(this, new EventArgs());
+                        SettingsDismissed?.Invoke(this,
+                            new SettingsDismissedEventArgs(DismissType.Save));
+                    });
+                }
+                catch
+                {
+                    Application.Current.Dispatcher.Invoke(delegate
+                    {
+                        TextBoxEndpoint.IsEnabled = true;
+                        TextBoxEndpoint.Focus();
+                        TextBoxEndpoint.SelectAll();
+                        if (!IsSetupMode)
+                            ButtonCancel.IsEnabled = true;
+
+                        SettingsCheckCompleted?.Invoke(this, new EventArgs());
+                    });
+                }
+            }).Start();
         }
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {

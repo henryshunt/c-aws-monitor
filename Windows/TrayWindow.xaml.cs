@@ -20,8 +20,8 @@ namespace C_AWSMonitor.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            _DataPage.DataDownloadStarted += _DataPage_DataDownloadStarted;
-            _DataPage.DataDownloadCompleted += _DataPage_DataDownloadCompleted;
+            _DataPage.DataDownloadStarted += DataPage_DataDownloadStarted;
+            _DataPage.DataDownloadCompleted += DataPage_DataDownloadCompleted;
         }
         private void Window_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
@@ -29,16 +29,16 @@ namespace C_AWSMonitor.Windows
                 OnDeactivated(new EventArgs());
         }
 
-        private void _DataPage_DataDownloadStarted(object sender, EventArgs e)
+        private void DataPage_DataDownloadStarted(object sender, EventArgs e)
         {
-            SprocketControlSpinner.Visibility = Visibility.Visible;
+            SprocketControlA.Visibility = Visibility.Visible;
             ButtonRefresh.IsEnabled = false;
             ButtonSettings.IsEnabled = false;
             LabelPageTitle.Content = "Refreshing Data...";
         }
-        private void _DataPage_DataDownloadCompleted(object sender, EventArgs e)
+        private void DataPage_DataDownloadCompleted(object sender, EventArgs e)
         {
-            SprocketControlSpinner.Visibility = Visibility.Collapsed;
+            SprocketControlA.Visibility = Visibility.Collapsed;
             ButtonRefresh.IsEnabled = true;
             ButtonSettings.IsEnabled = true;
 
@@ -63,6 +63,7 @@ namespace C_AWSMonitor.Windows
                 {
                     SwitchPage(MonitorPage.Settings);
                     LabelPageTitle.Content = "Setup C-AWS Monitor";
+                    ButtonMore.IsEnabled = false;
                 }
                 else
                 {
@@ -113,6 +114,8 @@ namespace C_AWSMonitor.Windows
                 case MonitorPage.Settings:
                     {
                         SettingsPage settingsPage = new SettingsPage();
+                        settingsPage.SettingsCheckStarted += SettingsPage_SettingsCheckStarted;
+                        settingsPage.SettingsCheckCompleted += SettingsPage_SettingsCheckCompleted;
                         settingsPage.ExitButtonClicked += SettingsPage_ExitButtonClicked;
                         settingsPage.SettingsDismissed += SettingsPage_SettingsDismissed;
 
@@ -128,6 +131,14 @@ namespace C_AWSMonitor.Windows
                 ButtonMore.IsEnabled = false;
             else ButtonMore.IsEnabled = true;
         }
+        private void SettingsPage_SettingsCheckStarted(object sender, EventArgs e)
+        {
+            SprocketControlA.Visibility = Visibility.Visible;
+        }
+        private void SettingsPage_SettingsCheckCompleted(object sender, EventArgs e)
+        {
+            SprocketControlA.Visibility = Visibility.Collapsed;
+        }
         private void SettingsPage_ExitButtonClicked(object sender, EventArgs e)
         {
             Close();
@@ -135,6 +146,7 @@ namespace C_AWSMonitor.Windows
         private void SettingsPage_SettingsDismissed(object sender, SettingsDismissedEventArgs e)
         {
             SwitchPage(MonitorPage.Data);
+            if (e.Dismissal == DismissType.Save) ButtonMore.IsEnabled = true;
             _DataPage.LoadData(e.Dismissal == DismissType.Save ? true : false);
         }
     }

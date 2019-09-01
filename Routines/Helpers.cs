@@ -1,10 +1,22 @@
 ﻿using NodaTime;
 using System;
+using System.IO;
+using System.Net;
 
 namespace C_AWSMonitor.Routines
 {
     public static class Helpers
     {
+        public static string RequestURL(string url)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Timeout = 6000;
+
+            using (var stream = request.GetResponse().GetResponseStream())
+            using (var reader = new StreamReader(stream))
+                return reader.ReadToEnd();
+        }
+
         public static DateTime UTCToLocal(DateTime utc)
         {
             DateTimeZone dtz = DateTimeZoneProviders.Tzdb.GetZoneOrNull(

@@ -58,9 +58,9 @@ namespace C_AWSMonitor
                     string reportUrl = Path.Combine(Properties.Settings.Default
                         .DataEndpoint + "/", "data/now.php?time=" + utc);
 
-                    string reportData = new TimedWebClient(5000).DownloadString(reportUrl);
-                    Report reportJson = JsonConvert.DeserializeObject<Report>(
-                        reportData);
+                    string reportData = RequestURL(reportUrl);
+                    if (reportData == "1") throw new Exception("Server-side error");
+                    Report reportJson = JsonConvert.DeserializeObject<Report>(reportData);
 
                     // Recalibrate time to returned record time
                     dataTime = DateTime.Parse(reportJson.Time);
@@ -68,12 +68,12 @@ namespace C_AWSMonitor
                     utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
 
                     // Download and deserialise chart data for current day
-                    string graphUrl = Path.Combine(Properties.Settings.Default
-                        .DataEndpoint + "/", "data/graph-day.php?time=" + utc
-                        + "&fields=AirT");
+                    string graphUrl = Path.Combine(Properties.Settings.Default.DataEndpoint
+                        + "/", "data/graph-day.php?time=" + utc + "&fields=AirT");
+                    string graphData = RequestURL(graphUrl);
+                    if (graphData == "1") throw new Exception("Server-side error");
 
-                    string graphData = new TimedWebClient(5000).DownloadString(graphUrl)
-                        .Replace("[[", "[").Replace("]]", "]");
+                    graphData = graphData.Replace("[[", "[").Replace("]]", "]");
                     List<ChartPoint> graphJson = JsonConvert.DeserializeObject<List<
                         ChartPoint>>(graphData);
 
