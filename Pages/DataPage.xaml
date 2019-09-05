@@ -13,7 +13,7 @@
                 <oxy:DateTimeAxis x:Name="DateTimeAxisAirTX" Position="Bottom" TickStyle="None" MajorStep="0.25" StringFormat="%H" MajorGridlineStyle="Solid" Minimum="0" Maximum="1"/>
             </oxy:Plot.Axes>
 
-            <oxy:LineSeries ItemsSource="{Binding Points}" Color="#F35168"/>
+            <oxy:LineSeries ItemsSource="{Binding Points}" Color="#FFC32728"/>
         </oxy:Plot>
 
         <Label Content="Relative Humidity:" Margin="20,183,0,0" VerticalAlignment="Top" Padding="0" Foreground="#FFE6E6E6" HorizontalAlignment="Left"/>

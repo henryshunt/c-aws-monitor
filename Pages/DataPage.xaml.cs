@@ -46,55 +46,34 @@ namespace C_AWSMonitor
 
             new Thread(delegate ()
             {
+                Application.Current.Dispatcher.Invoke(delegate
+                { DataDownloadStarted?.Invoke(this, new EventArgs()); });
+                bool reportError = false;
+                bool graphError = false;
+
+                DateTime dataTime = DateTime.UtcNow;
+                string utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
+
+                // Download and deserialise report for current time
                 try
                 {
-                    Application.Current.Dispatcher.Invoke(delegate
-                    { DataDownloadStarted?.Invoke(this, new EventArgs()); });
-
-                    DateTime dataTime = DateTime.UtcNow;
-                    string utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
-
-                    // Download and deserialise report for current time
                     string reportUrl = Path.Combine(Properties.Settings.Default
-                        .DataEndpoint + "/", "data/now.php?time=" + utc);
-
+                        .DataEndpoint + "/", "data/reports.php?time=" + utc);
                     string reportData = RequestURL(reportUrl);
                     if (reportData == "1") throw new Exception("Server-side error");
+
                     Report reportJson = JsonConvert.DeserializeObject<Report>(reportData);
 
                     // Recalibrate time to returned record time
                     dataTime = DateTime.Parse(reportJson.Time);
                     dataTime = DateTime.SpecifyKind(dataTime, DateTimeKind.Utc);
-                    utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-00");
+                    utc = dataTime.ToString("yyyy-MM-dd'T'HH-mm-ss");
 
-                    // Download and deserialise chart data for current day
-                    string graphUrl = Path.Combine(Properties.Settings.Default.DataEndpoint
-                        + "/", "data/graph-day.php?time=" + utc + "&fields=AirT");
-                    string graphData = RequestURL(graphUrl);
-                    if (graphData == "1") throw new Exception("Server-side error");
-
-                    graphData = graphData.Replace("[[", "[").Replace("]]", "]");
-                    List<ChartPoint> graphJson = JsonConvert.DeserializeObject<List<
-                        ChartPoint>>(graphData);
-
-                    LastUpdated = dataTime;
-                    DataTime = dataTime;
-
-                    // Display downloaded data in the interface
                     Application.Current.Dispatcher.Invoke(delegate
                     {
                         if (reportJson.AirT != null)
                             LabelAirT.Content = ((double)reportJson.AirT).ToString("0.0") + "°C";
                         else LabelAirT.Content = "No Data";
-
-                        // Add points to chart
-                        ChartModel.ClearPoints();
-
-                        foreach (var item in graphJson)
-                        {
-                            if (item.Y != null)
-                                ChartModel.AddPoint(UTCToLocal(item.X), (double)item.Y);
-                        }
 
                         if (reportJson.RelH != null)
                             LabelRelH.Content = ((double)reportJson.RelH).ToString("0.0") + "%";
@@ -155,6 +134,50 @@ namespace C_AWSMonitor
                         if (reportJson.ST00 != null)
                             LabelST00.Content = ((double)reportJson.ST00).ToString("0.0") + "°C";
                         else LabelST00.Content = "No Data";
+                    });
+                }
+                catch
+                {
+                    reportError = true;
+
+                    Application.Current.Dispatcher.Invoke(delegate
+                    {
+                        LabelAirT.Content = "No Data";
+                        LabelRelH.Content = "No Data";
+                        LabelDewP.Content = "No Data";
+                        LabelWSpd.Content = "No Data";
+                        LabelWDir.Content = "No Data";
+                        LabelWGst.Content = "No Data";
+                        LabelSunDPHr.Content = "No Data";
+                        LabelRainPHr.Content = "No Data";
+                        LabelMSLP.Content = "No Data";
+                        LabelStaPPTH.Content = "No Data";
+                        LabelST10.Content = "No Data";
+                        LabelST30.Content = "No Data";
+                        LabelST00.Content = "No Data";
+                    });
+                }
+
+                // Download and deserialise chart data for current day
+                try
+                {
+                    string graphUrl = Path.Combine(Properties.Settings.Default.DataEndpoint
+                        + "/", "data/graph-day.php?time=" + utc + "&fields=AirT");
+                    string graphData = RequestURL(graphUrl);
+                    if (graphData == "1") throw new Exception("Server-side error");
+
+                    graphData = graphData.Replace("[[", "[").Replace("]]", "]");
+                    List<ChartPoint> graphJson = JsonConvert.DeserializeObject<List<
+                        ChartPoint>>(graphData);
+
+                    Application.Current.Dispatcher.Invoke(delegate
+                    {
+                        ChartModel.ClearPoints();
+                        foreach (var item in graphJson)
+                        {
+                            if (item.Y != null)
+                                ChartModel.AddPoint(UTCToLocal(item.X), (double)item.Y);
+                        }
 
                         // Calculate chart boundaries
                         var bounds = GetDayBounds(UTCToLocal(dataTime));
@@ -162,15 +185,24 @@ namespace C_AWSMonitor
                         DateTimeAxisAirTX.Maximum = DateTimeAxis.ToDouble(bounds.Item2);
                         SetYAxisSettings();
                         PlotAirT.InvalidatePlot();
-
-                        DataDownloadCompleted?.Invoke(this, new EventArgs());
                     });
                 }
                 catch
                 {
+                    graphError = true;
                     Application.Current.Dispatcher.Invoke(delegate
-                    { DataDownloadCompleted?.Invoke(this, new EventArgs()); });
+                    { ChartModel.ClearPoints(); });
                 }
+
+                // If any request succeeded, set the loaded time
+                if (!reportError || !graphError)
+                {
+                    LastUpdated = dataTime;
+                    DataTime = dataTime;
+                }
+
+                Application.Current.Dispatcher.Invoke(delegate
+                { DataDownloadCompleted?.Invoke(this, new EventArgs()); });
             }).Start();
         }
 

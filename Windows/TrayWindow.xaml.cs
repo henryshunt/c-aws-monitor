@@ -34,7 +34,6 @@ namespace C_AWSMonitor.Windows
             SprocketControlA.Visibility = Visibility.Visible;
             ButtonRefresh.IsEnabled = false;
             ButtonSettings.IsEnabled = false;
-            LabelPageTitle.Content = "Refreshing Data...";
         }
         private void DataPage_DataDownloadCompleted(object sender, EventArgs e)
         {
@@ -47,7 +46,7 @@ namespace C_AWSMonitor.Windows
                 LabelPageTitle.Content = "Data on " + UTCToLocal(
                     _DataPage.DataTime).ToString("dd/MM/yyyy 'at' HH:mm", null);
             }
-            else { LabelPageTitle.Content = "Error Loading Data"; }
+            else LabelPageTitle.Content = "No Data";
         }
 
         public void Open()
@@ -109,6 +108,13 @@ namespace C_AWSMonitor.Windows
                         FramePageDisplay.Content = _DataPage;
                         ButtonRefresh.IsEnabled = true;
                         ButtonSettings.IsEnabled = true;
+
+                        if (_DataPage.DataTime != DateTime.MinValue)
+                        {
+                            LabelPageTitle.Content = "Data on " + UTCToLocal(
+                                _DataPage.DataTime).ToString("dd/MM/yyyy 'at' HH:mm", null);
+                        }
+                        else LabelPageTitle.Content = "No Data";
                         break;
                     }
                 case MonitorPage.Settings:
@@ -122,6 +128,7 @@ namespace C_AWSMonitor.Windows
                         FramePageDisplay.Content = settingsPage;
                         ButtonRefresh.IsEnabled = false;
                         ButtonSettings.IsEnabled = false;
+                        LabelPageTitle.Content = "Settings";
                         break;
                     }
                 default: break;
